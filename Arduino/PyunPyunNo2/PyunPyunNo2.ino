@@ -147,6 +147,7 @@ void loop()
 	lfoFrequency  = (double)analogRead(LFO_FREQUENCY_PIN) / 32;	// 0.0..32.0Hz
 	lfoAmount     = map(analogRead(LFO_AMOUNT_PIN), 0, 1023, 0, 255);
 	
+/*
 	bouncerWaveForm.update();
 	waveForm = bouncerWaveForm.read();
 	if (waveForm > WAVEFORM_NUM)
@@ -156,7 +157,7 @@ void loop()
 	lfoForm = bouncerLfoForm.read();
 	if (lfoForm > WAVEFORM_NUM)
 		lfoForm = 0;
-	
+*/	
 	// 変数の更新
 	tuningWord = waveFrequency * pow(2.0, 16) / SAMPLE_CLOCK;
 	lfoTuningWord = lfoFrequency * pow(2.0, 16) / LFO_CLOCK;
@@ -214,7 +215,7 @@ ISR(TIMER2_OVF_vect) {
 	tick++;
 	
 	// Caluclate LFO Value
-/*
+
 	if (tick > SAMPLE_CLOCK / LFO_CLOCK) {
 		tick = 0;
 	
@@ -224,20 +225,22 @@ ISR(TIMER2_OVF_vect) {
 		lfoIndex = lfoPhaseRegister >> 6;
 
 		// lookupTable(12bit) * lfoAmount(8bit) : 20bit -> 16bit
-		lfoValue = (((int32_t)pgm_read_byte_near(waveForms[lfoForm] + lfoIndex)) - 2048) * lfoAmount >> 4;
+		lfoValue = (((int32_t)pgm_read_word(waveForms[lfoForm] + lfoIndex)) - 2048) * lfoAmount >> 4;
 
 		// tuningWord(16bit) * lfoValue(15bit + 1bit) : (31bit + 1bit) -> 16bit
 		lfoValue = (((int32_t)tuningWord) * lfoValue) >> 15;
 	}
-*/	
+	
 	// Caluclate Wave Value
 	phaseRegister += tuningWord + lfoValue;
 	
 	// 16bitのphaseRegisterをテーブルの10bit(1024個)に丸める
 	index = phaseRegister >> 6;
 		
-	waveValue = pgm_read_byte_near(waveForms[waveForm] + index);
+	waveValue = pgm_read_word(waveForms[waveForm] + index);
+        //int t = pgm_read_word(waveForms[waveForm]);
 	
+        //Serial.println(waveValue);
 	// DACに出力
 	MCPDAC.setVoltage(CHANNEL_A, waveValue);
 }
