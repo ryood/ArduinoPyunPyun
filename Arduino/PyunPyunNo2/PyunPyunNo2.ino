@@ -58,6 +58,7 @@
 
 #define SAMPLE_CLOCK   15625.0
 #define LFO_CLOCK      3125.0
+#define LFO_PERIOD     5        // SAMPLE_CLOCK / LFO_CLOCK
 #define WAVETABLE_SIZE 1024
 
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
@@ -91,7 +92,7 @@ volatile uint16_t tuningWord;
 volatile uint16_t lfoPhaseRegister;
 volatile uint16_t lfoTuningWord;
 
-volatile uint16_t tick = 0;
+volatile uint16_t lfoTick = 0;
 
 void setup()
 {
@@ -209,16 +210,13 @@ void SetupTimer2()
 // Timer2 Interrupt Service at 15,625Hz = 64uSec
 ISR(TIMER2_OVF_vect) {
   uint16_t lfoIndex;
-  int16_t lfoValue;
+  uint16_t lfoValue;
   uint16_t index;
   uint16_t waveValue;
 
-  tick++;
-
   // Caluclate LFO Value
-
-  if (tick > SAMPLE_CLOCK / LFO_CLOCK) {
-    tick = 0;
+  if (++lfoTick > LFO_PERIOD) {
+    lfoTick = 0;
 
     lfoPhaseRegister += lfoTuningWord;
 
@@ -226,10 +224,10 @@ ISR(TIMER2_OVF_vect) {
     lfoIndex = lfoPhaseRegister >> 6;
 
     // lookupTable(12bit) * lfoAmount(8bit) : 20bit -> 16bit
-    lfoValue = (((int32_t)pgm_read_word(waveForms[lfoForm] + lfoIndex)) - 2048) * lfoAmount >> 4;
+    lfoValue = ((uint32_t)pgm_read_word(waveForms[lfoForm] + lfoIndex)) * lfoAmount >> 4;
 
-    // tuningWord(16bit) * lfoValue(15bit + 1bit) : (31bit + 1bit) -> 16bit
-    lfoValue = (((int32_t)tuningWord) * lfoValue) >> 15;
+    // (lfoValue + tuningWord) into 16bit depth
+    lfoValue = ((uint32_t)lfoValue * (0x10000 - tuningWord)) >> 16;
   }
 
   // Caluclate Wave Value
@@ -241,8 +239,9 @@ ISR(TIMER2_OVF_vect) {
   waveValue = pgm_read_word(waveForms[waveForm] + index);
   //int t = pgm_read_word(waveForms[waveForm]);
 
-  //Serial.println(waveValue);
   // DACに出力
   MCPDAC.setVoltage(CHANNEL_A, waveValue);
+  
+  //Serial.println(waveValue);
 }
 
