@@ -72,12 +72,6 @@ double waveFrequency = 1000.0;
 double lfoFrequency  = 5.0;
 uint8_t lfoAmount    = 0; 
 
-/*
-double prevWeveFrequency;
- double prevLfoFrequency;
- uint8_t prevLfoAmount;
- */
-
 int waveForm = 0;
 int lfoForm  = 0;
 
@@ -121,11 +115,7 @@ void setup()
   // 変数の初期化
   lfoTuningWord = lfoFrequency * pow(2.0, 16) / LFO_CLOCK;
   tuningWord = waveFrequency * pow(2.0, 16) / SAMPLE_CLOCK;
-  /*
-	prevWaveFrequency = waveFrequency;
-   	prevLfoFrequency = lfoFrequency;
-   	prevLfoAmount = lfoAmount;
-   	*/
+ 
   phaseRegister = 0;
   lfoPhaseRegister = 0;
 
@@ -162,16 +152,6 @@ void loop()
   // 変数の更新
   tuningWord = waveFrequency * pow(2.0, 16) / SAMPLE_CLOCK;
   lfoTuningWord = lfoFrequency * pow(2.0, 16) / LFO_CLOCK;
-  /*
-	if (waveFrequency != prevWaveFrequency) {
-   		prevWaveFreqency = waveFrequency;
-   		tuningWord = waveFrequency * pow(2.0, 16) / SAMPLE_CLOCK;
-   	}
-   	if (lfoFrequency != prevLfoFrequency) {
-   		prevLfoFrequency = lfoFrequency;
-   		lfoTuningWord = lfoFrequency * pow(2.0, 16) / LFO_CLOCK;
-   	}
-   	*/
 
   // LCDの表示の初期化
   sprintf(buff, "FREQ LFO DPT %s",  waveFormStr[waveForm]);
@@ -218,6 +198,8 @@ ISR(TIMER2_OVF_vect) {
   // Caluclate LFO Value
 
   if (tick > SAMPLE_CLOCK / LFO_CLOCK) {
+    // ↑なぜか右辺が浮動し小数点型でないと動かない
+    
     tick = 0;
 
     lfoPhaseRegister += lfoTuningWord;
@@ -228,8 +210,7 @@ ISR(TIMER2_OVF_vect) {
     // lookupTable(12bit) * lfoAmount(8bit) : 20bit -> 16bit
     lfoValue = (((int32_t)pgm_read_word(waveForms[lfoForm] + lfoIndex)) - 2048) * lfoAmount >> 4;
 
-    // tuningWord(16bit) * lfoValue(15bit + 1bit) : (31bit + 1bit) -> 16bit
-    /* ここのコメントはあやしい
+    /* 
      * シフト可能なビット数は
      * tuningWordの最大値とのからみかも？
      */
@@ -243,7 +224,6 @@ ISR(TIMER2_OVF_vect) {
   index = phaseRegister >> 6;
 
   waveValue = pgm_read_word(waveForms[waveForm] + index);
-  //int t = pgm_read_word(waveForms[waveForm]);
 
   //Serial.println(waveValue);
   // DACに出力
