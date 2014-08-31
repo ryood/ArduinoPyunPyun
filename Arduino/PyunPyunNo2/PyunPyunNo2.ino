@@ -73,12 +73,6 @@ double waveFrequency = 1000.0;
 double lfoFrequency  = 5.0;
 uint8_t lfoAmount    = 0; 
 
-/*
-double prevWeveFrequency;
- double prevLfoFrequency;
- uint8_t prevLfoAmount;
- */
-
 int waveForm = 0;
 int lfoForm  = 0;
 
@@ -122,11 +116,7 @@ void setup()
   // 変数の初期化
   lfoTuningWord = lfoFrequency * pow(2.0, 16) / LFO_CLOCK;
   tuningWord = waveFrequency * pow(2.0, 16) / SAMPLE_CLOCK;
-  /*
-	prevWaveFrequency = waveFrequency;
-   	prevLfoFrequency = lfoFrequency;
-   	prevLfoAmount = lfoAmount;
-   	*/
+
   phaseRegister = 0;
   lfoPhaseRegister = 0;
 
@@ -163,16 +153,6 @@ void loop()
   // 変数の更新
   tuningWord = waveFrequency * pow(2.0, 16) / SAMPLE_CLOCK;
   lfoTuningWord = lfoFrequency * pow(2.0, 16) / LFO_CLOCK;
-  /*
-	if (waveFrequency != prevWaveFrequency) {
-   		prevWaveFreqency = waveFrequency;
-   		tuningWord = waveFrequency * pow(2.0, 16) / SAMPLE_CLOCK;
-   	}
-   	if (lfoFrequency != prevLfoFrequency) {
-   		prevLfoFrequency = lfoFrequency;
-   		lfoTuningWord = lfoFrequency * pow(2.0, 16) / LFO_CLOCK;
-   	}
-   	*/
 
   // LCDの表示の初期化
   sprintf(buff, "FREQ LFO DPT %s",  waveFormStr[waveForm]);
@@ -189,11 +169,6 @@ void loop()
 void SetupTimer2()
 {
   // Timer2 PWM Mode set to Phase Correct PWM
-  /*
-	cbi (TCCR2A, COM2A0);  
-   	cbi (TCCR2A, COM2A1);
-   	*/
-
   sbi (TCCR2A, WGM20);  // Mode 7 / Fast PWM
   sbi (TCCR2A, WGM21);
   sbi (TCCR2B, WGM22);
@@ -223,11 +198,17 @@ ISR(TIMER2_OVF_vect) {
     // 16bitのlfoPhaseRegisterをテーブルの10bit(1024個)に丸める
     lfoIndex = lfoPhaseRegister >> 6;
 
-    // lookupTable(12bit) * lfoAmount(8bit) : 20bit -> 16bit
-    lfoValue = ((uint32_t)pgm_read_word(waveForms[lfoForm] + lfoIndex)) * lfoAmount >> 4;
-
+    // lookupTable(12bit) * (lfoAmount(8bit) + (4bit)) : 24bit -> 10bit
+    lfoValue = ((uint32_t)pgm_read_word(waveForms[lfoForm] + lfoIndex)) * ((uint16_t)lfoAmount << 4) >> 12;
+    //lfoValue = 0;
+    //Serial.println(lfoValue);
+    //Serial.print(",");
+    //Serial.println(tuningWord);
+    
     // (lfoValue + tuningWord) into 16bit depth
-    lfoValue = ((uint32_t)lfoValue * (0x10000 - tuningWord)) >> 16;
+    //lfoValue = ((uint32_t)lfoValue * (0x10000 - tuningWord)) >> 16;
+    
+    //Serial.println(lfoValue);
   }
 
   // Caluclate Wave Value
