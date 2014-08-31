@@ -63,7 +63,7 @@
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 
-const char *waveFormStr[] = { "SIN", "TRI", "SAW1", "SAW2", "SQR" };
+const char *waveFormStr[] = { "SIN", "TRI", "SW1", "SW2", "SQR" };
 uint16_t *waveForms[WAVEFORM_NUM];
 
 // parameters
@@ -147,17 +147,16 @@ void loop()
 	lfoFrequency  = (double)analogRead(LFO_FREQUENCY_PIN) / 32;	// 0.0..32.0Hz
 	lfoAmount     = map(analogRead(LFO_AMOUNT_PIN), 0, 1023, 0, 255);
 	
-/*
-	bouncerWaveForm.update();
-	waveForm = bouncerWaveForm.read();
+        bouncerWaveForm.update();
+	waveForm += !bouncerWaveForm.read();
 	if (waveForm > WAVEFORM_NUM)
 		waveForm = 0;
 	
 	bouncerLfoForm.update();
-	lfoForm = bouncerLfoForm.read();
+	lfoForm += !bouncerLfoForm.read();
 	if (lfoForm > WAVEFORM_NUM)
 		lfoForm = 0;
-*/	
+	
 	// 変数の更新
 	tuningWord = waveFrequency * pow(2.0, 16) / SAMPLE_CLOCK;
 	lfoTuningWord = lfoFrequency * pow(2.0, 16) / LFO_CLOCK;
