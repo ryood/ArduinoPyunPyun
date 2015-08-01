@@ -8,7 +8,7 @@
 #include <avr/pgmspace.h>
 
 // table of 1024 values / one period / stored in flash memory
-PROGMEM  uint16_t waveTableSine[]  = {
+const PROGMEM uint16_t waveTableSine[]  = {
 	2047,
 	2060,
 	2072,
@@ -1034,7 +1034,7 @@ PROGMEM  uint16_t waveTableSine[]  = {
 	2022,
 	2034
 };
-PROGMEM  prog_uint16_t waveTableTriangle[]  = {
+const PROGMEM uint16_t waveTableTriangle[]  = {
 	2048,
 	2056,
 	2064,
@@ -2060,7 +2060,7 @@ PROGMEM  prog_uint16_t waveTableTriangle[]  = {
 	2032,
 	2040
 };
-PROGMEM  prog_uint16_t waveTableSqure[]  = {
+const PROGMEM uint16_t waveTableSqure[]  = {
 	4095,
 	4095,
 	4095,
@@ -3087,7 +3087,7 @@ PROGMEM  prog_uint16_t waveTableSqure[]  = {
 	0
 };
 
-PROGMEM  prog_uint16_t waveTableSawtoothUp[]  = {
+const PROGMEM uint16_t waveTableSawtoothUp[]  = {
 	0,
 	4,
 	8,
@@ -4114,7 +4114,7 @@ PROGMEM  prog_uint16_t waveTableSawtoothUp[]  = {
 	4092
 };
 
-PROGMEM  prog_uint16_t waveTableSawtoothDown[]  = {
+const PROGMEM uint16_t waveTableSawtoothDown[]  = {
 	4095,
 	4091,
 	4087,

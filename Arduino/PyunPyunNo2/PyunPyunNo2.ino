@@ -21,14 +21,18 @@
  * 10K resistor:
  *   ends to +5V and ground
  *   wiper to LCD VO pin (pin 3)
- * 
+ *
+ * Arduino Libraryを使用(インストールしてください)
+ * MCPDAC: http://hacking.majenko.co.uk/MCPDAC
+ * Bounce2: http://playground.arduino.cc/Code/Bounce
+ *
  * 2014.01.15 by gizmo
  * 2014.01.15 DAC出力
  * 2014.01.27 WavForm選択をボタンに
  * 2014.01.27 Debounce
  * 2014.02.01 LFO表示を3桁に
  * 2014.08.25 Rev.2
- * 
+ * 2015.08.01 Arduino 1.6.4に対応 
  ********************************************************/
 
 #include <stdio.h>
@@ -65,7 +69,7 @@
 
 const char *waveFormStr[] = { 
   "SIN", "TRI", "SW1", "SW2", "SQR" };
-uint16_t *waveForms[WAVEFORM_NUM];
+const uint16_t *waveForms[WAVEFORM_NUM];
 
 // parameters
 double waveFrequency = 1000.0;
